@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Skimaps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .link-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .logo-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .link-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .link-description {
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .edit-mode {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .edit-mode h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .toggle-edit {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toggle-edit:hover {
+            background: #5568d3;
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Skimaps</h1>
+
+        <div id="editMode" class="edit-mode hidden">
+            <h2>Link bearbeiten</h2>
+            <div class="form-group">
+                <label>Titel:</label>
+                <input type="text" id="editTitle" placeholder="z.B. Google">
+            </div>
+            <div class="form-group">
+                <label>Beschreibung:</label>
+                <textarea id="editDescription" placeholder="Kurze Beschreibung des Links"></textarea>
+            </div>
+            <div class="form-group">
+                <label>URL:</label>
+                <input type="text" id="editUrl" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+                <label>Logo URL:</label>
+                <input type="text" id="editLogo" placeholder="https://example.com/logo.png">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="saveLink()">Speichern</button>
+                <button class="btn-secondary" onclick="cancelEdit()">Abbrechen</button>
+            </div>
+        </div>
+
+        <div class="grid" id="linkGrid"></div>
+    </div>
+
+    <button class="toggle-edit" onclick="toggleEditMode()" title="Bearbeitungsmodus">✏️</button>
+
+    <script>
+        let links = [
+            { id: 1, title: 'Saastal', description: 'Beschreibung für Link 1', url: 'https://winter.intermaps.com/saastal', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
+            { id: 2, title: 'Saas-Fee', description: 'Beschreibung für Link 2', url: 'https://winter.intermaps.com/saas_fee', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
+            { id: 3, title: 'Saas-Grund', description: 'Beschreibung für Link 3', url: 'https://infosnow.ch/~apgmontagne/?id=206&tab=map-wi&fit=2&lang=de', logo: 'https://hohsaas.roundshot.com/logos/5a159903536941.22847410/28e19d636aa994827e610ad6549edacdd7604f34.png' },
+            { id: 4, title: 'Link 4', description: 'Beschreibung für Link 4', url: 'https://example.com', logo: 'https://via.placeholder.com/80/4facfe/ffffff?text=4' },
+            { id: 5, title: 'Link 5', description: 'Beschreibung für Link 5', url: 'https://example.com', logo: 'https://via.placeholder.com/80/00f2fe/ffffff?text=5' },
+            { id: 6, title: 'Link 6', description: 'Beschreibung für Link 6', url: 'https://example.com', logo: 'https://via.placeholder.com/80/43e97b/ffffff?text=6' },
+            { id: 7, title: 'Link 7', description: 'Beschreibung für Link 7', url: 'https://example.com', logo: 'https://via.placeholder.com/80/38f9d7/ffffff?text=7' },
+            { id: 8, title: 'Link 8', description: 'Beschreibung für Link 8', url: 'https://example.com', logo: 'https://via.placeholder.com/80/fa709a/ffffff?text=8' },
+            { id: 9, title: 'Link 9', description: 'Beschreibung für Link 9', url: 'https://example.com', logo: 'https://via.placeholder.com/80/fee140/ffffff?text=9' },
+            { id: 10, title: 'Link 10', description: 'Beschreibung für Link 10', url: 'https://example.com', logo: 'https://via.placeholder.com/80/30cfd0/ffffff?text=10' },
+            { id: 11, title: 'Link 11', description: 'Beschreibung für Link 11', url: 'https://example.com', logo: 'https://via.placeholder.com/80/a8edea/ffffff?text=11' },
+            { id: 12, title: 'Link 12', description: 'Beschreibung für Link 12', url: 'https://example.com', logo: 'https://via.placeholder.com/80/fed6e3/ffffff?text=12' },
+            { id: 13, title: 'Link 13', description: 'Beschreibung für Link 13', url: 'https://example.com', logo: 'https://via.placeholder.com/80/c471f5/ffffff?text=13' },
+            { id: 14, title: 'Link 14', description: 'Beschreibung für Link 14', url: 'https://example.com', logo: 'https://via.placeholder.com/80/fa71cd/ffffff?text=14' },
+            { id: 15, title: 'Link 15', description: 'Beschreibung für Link 15', url: 'https://example.com', logo: 'https://via.placeholder.com/80/ff9a9e/ffffff?text=15' }
+        ];
+
+        let currentEditId = null;
+        let isEditModeActive = false;
+
+        function renderLinks() {
+            const grid = document.getElementById('linkGrid');
+            grid.innerHTML = '';
+            
+            links.forEach(link => {
+                const card = document.createElement('a');
+                card.className = 'link-card';
+                card.href = link.url;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+                
+                if (isEditModeActive) {
+                    card.onclick = function(e) {
+                        e.preventDefault();
+                        editLink(link.id);
+                    };
+                }
+                
+                card.innerHTML = `
+                    <div class="logo-container">
+                        <img src="${link.logo}" alt="${link.title}">
+                    </div>
+                    <div class="link-title">${link.title}</div>
+                    <div class="link-description">${link.description}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleEditMode() {
+            isEditModeActive = !isEditModeActive;
+            const button = document.querySelector('.toggle-edit');
+            button.textContent = isEditModeActive ? '👁️' : '✏️';
+            button.title = isEditModeActive ? 'Ansichtsmodus' : 'Bearbeitungsmodus';
+            
+            if (!isEditModeActive) {
+                cancelEdit();
+            }
+            
+            renderLinks();
+        }
+
+        function editLink(id) {
+            const link = links.find(l => l.id === id);
+            if (!link) return;
+            
+            currentEditId = id;
+            document.getElementById('editTitle').value = link.title;
+            document.getElementById('editDescription').value = link.description;
+            document.getElementById('editUrl').value = link.url;
+            document.getElementById('editLogo').value = link.logo;
+            document.getElementById('editMode').classList.remove('hidden');
+            
+            document.getElementById('editMode').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function saveLink() {
+            if (currentEditId === null) return;
+            
+            const link = links.find(l => l.id === currentEditId);
+            if (!link) return;
+            
+            link.title = document.getElementById('editTitle').value;
+            link.description = document.getElementById('editDescription').value;
+            link.url = document.getElementById('editUrl').value;
+            link.logo = document.getElementById('editLogo').value;
+            
+            cancelEdit();
+            renderLinks();
+        }
+
+        function cancelEdit() {
+            currentEditId = null;
+            document.getElementById('editMode').classList.add('hidden');
+            document.getElementById('editTitle').value = '';
+            document.getElementById('editDescription').value = '';
+            document.getElementById('editUrl').value = '';
+            document.getElementById('editLogo').value = '';
+        }
+
+        renderLinks();
+    </script>
+</body>
+</html>
