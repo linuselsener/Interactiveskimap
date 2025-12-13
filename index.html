@@ -81,11 +81,30 @@
             text-align: center;
         }
 
-        .link-description {
+        .link-secondary {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .link-secondary a {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
             font-size: 0.9em;
-            color: #666;
-            text-align: center;
-            line-height: 1.5;
+        }
+
+        .primary-link {
+            background: #667eea;
+        }
+
+        .secondary-link {
+            background: #e0e0e0;
+            color: #333;
         }
 
         .edit-mode {
@@ -198,8 +217,8 @@
                 <input type="text" id="editTitle" placeholder="z.B. Google">
             </div>
             <div class="form-group">
-                <label>Beschreibung:</label>
-                <textarea id="editDescription" placeholder="Kurze Beschreibung des Links"></textarea>
+                <label>Zweiter Link (optional):</label>
+                <input type="text" id="editUrl2" placeholder="https://example.org/alt-link">
             </div>
             <div class="form-group">
                 <label>URL:</label>
@@ -222,21 +241,21 @@
 
     <script>
         let links = [
-            { id: 1, title: 'Saastal', description: 'Beschreibung für Link 1', url: 'https://winter.intermaps.com/saastal', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
-            { id: 2, title: 'Saas-Fee', description: 'Beschreibung für Link 2', url: 'https://winter.intermaps.com/saas_fee', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
-            { id: 3, title: 'Saas-Grund', description: 'Beschreibung für Link 3', url: 'https://infosnow.ch/~apgmontagne/?id=206&tab=map-wi&fit=2&lang=de', logo: 'https://hohsaas.roundshot.com/logos/5a159903536941.22847410/28e19d636aa994827e610ad6549edacdd7604f34.png' },
-            { id: 4, title: 'Grindelwald-Wengen', description: 'Beschreibung für Link 4', url: 'https://www.jungfrau.ch/maps/winter/grindelwald-wengen/', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
-            { id: 5, title: 'Grindelwald-First', description: 'Beschreibung für Link 5', url: 'https://www.jungfrau.ch/maps/winter/grindelwald-first', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
-            { id: 6, title: 'Mürren-Schilthorn', description: 'Beschreibung für Link 6', url: 'https://www.jungfrau.ch/maps/winter/muerren-schilthorn', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
-            { id: 7, title: '4 Vallées', description: 'Beschreibung für Link 7', url: 'https://infosnow.ch/~apgmontagne/?lang=en&pid=45&tab=map-wi2-verbier', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/4vallees/map-30/pics/logo.svg' },
-            { id: 8, title: 'Belalp', description: 'Beschreibung für Link 8', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=54&tab=map-wi', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/belalp/map-10/pics/logo.svg' },
-            { id: 9, title: 'Lauchernalp', description: 'Beschreibung für Link 9', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&pid=43&tab=map-wi', logo: 'https://vcdn.bergfex.at/images/resized/8a/d3a4d4095a35468a_8bbd595d4a6aaf49@2x.png' },
-            { id: 10, title: 'Aletsch Arena', description: 'Beschreibung für Link 10', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=51&tab=map-wi', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/aletsch/map-33/pics/logo.svg' },
-            { id: 11, title: 'Adelboden-Lenk', description: 'Beschreibung für Link 11', url: 'https://www.infosnow.ch/~apgmontagne/?id=62&tab=map-wi&', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/adelboden/map-11/pics/logo2.png' },
-            { id: 12, title: 'Zermatt', description: 'Beschreibung für Link 12', url: 'https://www.matterhornparadise.ch/de/erleben/skifahren/pistenplan', logo: 'https://www.matterhornparadise.ch/cache-buster-1534538338/static/build/img/logo-color.svg' },
-            { id: 13, title: 'Crans Montana', description: 'Beschreibung für Link 13', url: 'https://www.infosnow.ch/~apgmontagne/?id=141&tab=map-wi2&lng=de', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/montana/map-16/pics/logo2.png' },
-            { id: 14, title: 'Link 14', description: 'Beschreibung für Link 14', url: 'https://example.com', logo: 'https://via.placeholder.com/80/fa71cd/ffffff?text=14' },
-            { id: 15, title: 'Link 15', description: 'Beschreibung für Link 15', url: 'https://example.com', logo: 'https://via.placeholder.com/80/ff9a9e/ffffff?text=15' }
+            { id: 1, title: 'Saastal', url: 'https://winter.intermaps.com/saastal', url2: 'https://winter.intermaps.com/saastal', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
+            { id: 2, title: 'Saas-Fee', url: 'https://winter.intermaps.com/saas_fee', url2: 'https://winter.intermaps.com/saas_fee', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
+            { id: 3, title: 'Saas-Grund', url: 'https://infosnow.ch/~apgmontagne/?id=206&tab=map-wi&fit=2&lang=de', url2: 'https://infosnow.ch/~apgmontagne/?id=206&tab=map-wi&fit=2&lang=de', logo: 'https://hohsaas.roundshot.com/logos/5a159903536941.22847410/28e19d636aa994827e610ad6549edacdd7604f34.png' },
+            { id: 4, title: 'Grindelwald-Wengen', url: 'https://www.jungfrau.ch/maps/winter/grindelwald-wengen/', url2: 'https://www.jungfrau.ch/maps/winter/grindelwald-wengen/', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
+            { id: 5, title: 'Grindelwald-First', url: 'https://www.jungfrau.ch/maps/winter/grindelwald-first', url2: 'https://www.jungfrau.ch/maps/winter/grindelwald-first', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
+            { id: 6, title: 'Mürren-Schilthorn', url: 'https://www.jungfrau.ch/maps/winter/muerren-schilthorn', url2: 'https://www.jungfrau.ch/maps/winter/muerren-schilthorn', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
+            { id: 7, title: '4 Vallées', url: 'https://infosnow.ch/~apgmontagne/?lang=en&pid=45&tab=map-wi2-verbier', url2: 'https://infosnow.ch/~apgmontagne/?lang=en&pid=45&tab=map-wi2-verbier', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/4vallees/map-30/pics/logo.svg' },
+            { id: 8, title: 'Belalp', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=54&tab=map-wi', url2: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=54&tab=map-wi', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/belalp/map-10/pics/logo.svg' },
+            { id: 9, title: 'Lauchernalp', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&pid=43&tab=map-wi', url2: 'https://www.infosnow.ch/~apgmontagne/?lang=de&pid=43&tab=map-wi', logo: 'https://vcdn.bergfex.at/images/resized/8a/d3a4d4095a35468a_8bbd595d4a6aaf49@2x.png' },
+            { id: 10, title: 'Aletsch Arena', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=51&tab=map-wi', url2: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=51&tab=map-wi', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/aletsch/map-33/pics/logo.svg' },
+            { id: 11, title: 'Adelboden-Lenk', url: 'https://www.infosnow.ch/~apgmontagne/?id=62&tab=map-wi&', url2: 'https://www.infosnow.ch/~apgmontagne/?id=62&tab=map-wi&', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/adelboden/map-11/pics/logo2.png' },
+            { id: 12, title: 'Zermatt', url: 'https://www.matterhornparadise.ch/de/erleben/skifahren/pistenplan', url2: 'https://www.matterhornparadise.ch/de/erleben/skifahren/pistenplan', logo: 'https://www.matterhornparadise.ch/cache-buster-1534538338/static/build/img/logo-color.svg' },
+            { id: 13, title: 'Crans Montana', url: 'https://www.infosnow.ch/~apgmontagne/?id=141&tab=map-wi2&lng=de', url2: 'https://www.infosnow.ch/~apgmontagne/?id=141&tab=map-wi2&lng=de', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/montana/map-16/pics/logo2.png' },
+            { id: 14, title: 'Link 14', url: 'https://example.com', url2: 'https://example.com', logo: 'https://via.placeholder.com/80/fa71cd/ffffff?text=14' },
+            { id: 15, title: 'Link 15', url: 'https://example.com', url2: 'https://example.com', logo: 'https://via.placeholder.com/80/ff9a9e/ffffff?text=15' }
         ];
 
         let currentEditId = null;
@@ -245,32 +264,37 @@
         function renderLinks() {
             const grid = document.getElementById('linkGrid');
             grid.innerHTML = '';
-            
+
             // Sortiere Links alphabetisch nach Titel
             const sortedLinks = [...links].sort((a, b) => a.title.localeCompare(b.title, 'de'));
-            
+
             sortedLinks.forEach(link => {
-                const card = document.createElement('a');
+                const card = document.createElement('div');
                 card.className = 'link-card';
-                card.href = link.url;
-                card.target = '_blank';
-                card.rel = 'noopener noreferrer';
-                
+                card.style.cursor = 'pointer';
+
                 if (isEditModeActive) {
                     card.onclick = function(e) {
                         e.preventDefault();
                         editLink(link.id);
                     };
+                } else {
+                    card.onclick = function() {
+                        window.open(link.url, '_blank');
+                    };
                 }
-                
+
                 card.innerHTML = `
                     <div class="logo-container">
                         <img src="${link.logo}" alt="${link.title}">
                     </div>
                     <div class="link-title">${link.title}</div>
-                    <div class="link-description">${link.description}</div>
+                    <div class="link-secondary">
+                        <a class="primary-link" href="${link.url}" target="_blank" rel="noopener noreferrer">Hauptlink</a>
+                        <a class="secondary-link" href="${link.url2 || link.url}" target="_blank" rel="noopener noreferrer">Zweiter Link</a>
+                    </div>
                 `;
-                
+
                 grid.appendChild(card);
             });
         }
@@ -291,28 +315,28 @@
         function editLink(id) {
             const link = links.find(l => l.id === id);
             if (!link) return;
-            
+
             currentEditId = id;
             document.getElementById('editTitle').value = link.title;
-            document.getElementById('editDescription').value = link.description;
+            document.getElementById('editUrl2').value = link.url2 || '';
             document.getElementById('editUrl').value = link.url;
             document.getElementById('editLogo').value = link.logo;
             document.getElementById('editMode').classList.remove('hidden');
-            
+
             document.getElementById('editMode').scrollIntoView({ behavior: 'smooth' });
         }
 
         function saveLink() {
             if (currentEditId === null) return;
-            
+
             const link = links.find(l => l.id === currentEditId);
             if (!link) return;
-            
+
             link.title = document.getElementById('editTitle').value;
-            link.description = document.getElementById('editDescription').value;
+            link.url2 = document.getElementById('editUrl2').value;
             link.url = document.getElementById('editUrl').value;
             link.logo = document.getElementById('editLogo').value;
-            
+
             cancelEdit();
             renderLinks();
         }
@@ -321,7 +345,7 @@
             currentEditId = null;
             document.getElementById('editMode').classList.add('hidden');
             document.getElementById('editTitle').value = '';
-            document.getElementById('editDescription').value = '';
+            document.getElementById('editUrl2').value = '';
             document.getElementById('editUrl').value = '';
             document.getElementById('editLogo').value = '';
         }
