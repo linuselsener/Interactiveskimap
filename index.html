@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Skimaps</title>
+    <title>Meine Link-Sammlung</title>
     <style>
         * {
             margin: 0;
@@ -189,7 +189,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Interactive Skimaps</h1>
+        <h1>🔗 Meine Link-Sammlung</h1>
 
         <div id="editMode" class="edit-mode hidden">
             <h2>Link bearbeiten</h2>
@@ -246,7 +246,10 @@
             const grid = document.getElementById('linkGrid');
             grid.innerHTML = '';
             
-            links.forEach(link => {
+            // Sortiere Links alphabetisch nach Titel
+            const sortedLinks = [...links].sort((a, b) => a.title.localeCompare(b.title, 'de'));
+            
+            sortedLinks.forEach(link => {
                 const card = document.createElement('a');
                 card.className = 'link-card';
                 card.href = link.url;
