@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Skimaps</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .link-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: block;
+    }
+
+    .link-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+
+    .logo-container {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .logo-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .link-title {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .link-secondary {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .link-secondary a {
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+
+    .primary-link { background: #667eea; color: #fff; }
+    .secondary-link { background: #e0e0e0; color: #333; }
+
+    /* Edit-UI bleibt im Code, ist aber ohne Button nicht erreichbar */
+    .edit-mode {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .edit-mode h2 { color: #333; margin-bottom: 20px; }
+
+    .form-group { margin-bottom: 15px; }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1em;
+      font-family: inherit;
+    }
+
+    .button-group { display: flex; gap: 10px; margin-top: 20px; }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-weight: 500;
+    }
+
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover { background: #5568d3; }
+
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .btn-secondary:hover { background: #d0d0d0; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Interactive Skimaps</h1>
+
+    <div id="editMode" class="edit-mode hidden">
+      <h2>Link bearbeiten</h2>
+      <div class="form-group">
+        <label>Titel:</label>
+        <input type="text" id="editTitle" placeholder="z.B. Saas-Fee">
+      </div>
+      <div class="form-group">
+        <label>URL (Skimap):</label>
+        <input type="text" id="editUrl" placeholder="https://example.com">
+      </div>
+      <div class="form-group">
+        <label>Zweiter Link (bergfex / optional):</label>
+        <input type="text" id="editUrl2" placeholder="https://example.org/alt-link">
+      </div>
+      <div class="form-group">
+        <label>Logo URL:</label>
+        <input type="text" id="editLogo" placeholder="https://example.com/logo.png">
+      </div>
+      <div class="button-group">
+        <button class="btn-primary" onclick="saveLink()">Speichern</button>
+        <button class="btn-secondary" onclick="cancelEdit()">Abbrechen</button>
+      </div>
+    </div>
+
+    <div class="grid" id="linkGrid"></div>
+  </div>
+
+  <script>
+    let links = [
+      { id: 1, title: 'Saastal', url: 'https://winter.intermaps.com/saastal', url2: 'https://www.bergfex.ch/sommer/saastal/', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
+      { id: 2, title: 'Saas-Fee', url: 'https://winter.intermaps.com/saas_fee', url2: 'https://www.bergfex.ch/saas-fee/', logo: 'https://www.saas-fee.ch/typo3conf/ext/saasfee_extension/Resources/Public/Images/Logos/saas-fee-logo.svg' },
+      { id: 3, title: 'Saas Grund - Hohsaas', url: 'https://infosnow.ch/~apgmontagne/?id=206&tab=map-wi&fit=2&lang=de', url2: 'https://www.bergfex.ch/hohsaas-saas-grund/', logo: 'https://hohsaas.roundshot.com/logos/5a159903536941.22847410/28e19d636aa994827e610ad6549edacdd7604f34.png' },
+      { id: 4, title: 'Grindelwald-Wengen', url: 'https://www.jungfrau.ch/maps/winter/grindelwald-wengen/', url2: 'https://www.bergfex.ch/jungfrau-grindelwald-wengen/', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
+      { id: 5, title: 'Grindelwald-First', url: 'https://www.jungfrau.ch/maps/winter/grindelwald-first', url2: 'https://www.bergfex.ch/jungfrau-grindelwald-wengen/', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
+      { id: 6, title: 'Mürren-Schilthorn', url: 'https://www.jungfrau.ch/maps/winter/muerren-schilthorn', url2: 'https://www.bergfex.ch/muerren-schilthorn/', logo: 'https://www.jungfrau.ch/maps/_nuxt/img/logo.5df19ad.png' },
+      { id: 7, title: '4 Vallées', url: 'https://infosnow.ch/~apgmontagne/?lang=en&pid=45&tab=map-wi2-verbier', url2: 'https://www.bergfex.ch/verbier/', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/4vallees/map-30/pics/logo.svg' },
+      { id: 8, title: 'Belalp', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=54&tab=map-wi', url2: 'https://www.bergfex.ch/belalp/', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/belalp/map-10/pics/logo.svg' },
+      { id: 9, title: 'Lauchernalp', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&pid=43&tab=map-wi', url2: 'https://www.bergfex.ch/lauchernalp/', logo: 'https://vcdn.bergfex.at/images/resized/8a/d3a4d4095a35468a_8bbd595d4a6aaf49@2x.png' },
+      { id: 10, title: 'Aletsch Arena', url: 'https://www.infosnow.ch/~apgmontagne/?lang=de&id=51&tab=map-wi', url2: 'https://www.bergfex.ch/aletsch-arena/', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/aletsch/map-33/pics/logo.svg' },
+      { id: 11, title: 'Adelboden', url: 'https://www.infosnow.ch/~apgmontagne/?id=62&tab=map-wi&', url2: 'https://www.bergfex.ch/adelboden/', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/adelboden/map-11/pics/logo2.png' },
+      { id: 12, title: 'Zermatt', url: 'https://www.matterhornparadise.ch/de/erleben/skifahren/pistenplan', url2: 'https://www.bergfex.ch/zermatt/', logo: 'https://www.matterhornparadise.ch/cache-buster-1534538338/static/build/img/logo-color.svg' },
+      { id: 13, title: 'Crans Montana', url: 'https://www.infosnow.ch/~apgmontagne/?id=141&tab=map-wi2&lng=de', url2: 'https://www.bergfex.ch/crans-montana/', logo: 'https://infosnow.ch/~apgmontagne/pub/mod/montana/map-16/pics/logo2.png' },
+
+      /* NEU (mit Logos) */
+      { id: 14, title: 'Flims Laax Falera', url: 'https://www.laax.com/map', url2: 'https://www.bergfex.ch/laax/', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Laax-flims-laax-falera-vector-logo.png/900px-Laax-flims-laax-falera-vector-logo.png' },
+      { id: 15, title: 'Arosa Lenzerheide', url: 'https://winter.intermaps.com/arosa_lenzerheide', url2: 'https://www.bergfex.ch/arosa-lenzerheide/', logo: 'https://arosalenzerheide.swiss/1-content-hauptseiten/02_lenzerheide/06_admin/logos/arosa-lenzerheide/19570229/image-thumb__19570229__jsonLd/arosa-lenzerheide-logo-og-image_1.52ba47b1.jpg' },
+      { id: 16, title: 'Silvretta Arena Samnaun / Ischgl', url: 'https://winter.intermaps.com/samnaun', url2: 'https://www.bergfex.ch/samnaun/', logo: 'https://vcdn.bergfex.at/images/resized/5a/70ffa4f6c4fb4d5a_ba164635bc4cff8f@2x.png' },
+      { id: 17, title: 'Corviglia / St. Moritz', url: 'https://infosnow.ch/~apgmontagne/?id=41&tab=map-wi', url2: 'https://www.bergfex.ch/st-moritz-corviglia/', logo: 'https://vcdn.bergfex.at/images/resized/90/8569642c69217d90_bcbb0dd6727c2e56.png' },
+      { id: 18, title: 'Corvatsch - Furtschellas', url: 'https://www.infosnow.ch/~apgmontagne/?id=42&tab=map-wi&lang=de', url2: 'https://www.bergfex.ch/corvatsch-furtschellas/', logo: 'https://vcdn.bergfex.at/images/resized/cc/f9314764d66d5bcc_9f5322912036a904@2x.png' },
+      { id: 19, title: 'Andermatt-Sedrun-Disentis', url: 'https://live.andermatt-sedrun-disentis.ch/', url2: 'https://www.bergfex.ch/andermatt-oberalp-sedrun/', logo: 'https://live.andermatt-sedrun-disentis.ch/static/images/logo.svg' },
+      { id: 20, title: 'Davos Klosters Parsenn', url: 'https://www.davosklostersmountains.ch/de/mountains/winter/live-info/aktuelle-betriebsinfos?active=maps', url2: 'https://www.bergfex.ch/davos-parsenn/', logo: 'https://www.davosklostersmountains.ch/archiv/stylelab/logos/ci/media-logos/200455/image-thumb__200455__lightbox/Parsenn.jpg' },
+      { id: 21, title: 'Davos Pischa', url: 'https://www.davosklostersmountains.ch/de/mountains/winter/live-info/aktuelle-betriebsinfos?active=maps', url2: 'https://www.bergfex.ch/davos-pischa/', logo: 'https://www.davosklostersmountains.ch/archiv/stylelab/logos/ci/media-logos/200458/image-thumb__200458__lightbox/Pischa.jpg' },
+      { id: 22, title: 'Davos Rinerhorn', url: 'https://www.davosklostersmountains.ch/de/mountains/winter/live-info/aktuelle-betriebsinfos?active=maps', url2: 'https://www.bergfex.ch/rinerhorn/', logo: 'https://www.davosklostersmountains.ch/archiv/stylelab/logos/ci/media-logos/200450/image-thumb__200455__lightbox/Rinerhorn.jpg' },
+      { id: 23, title: 'Davos Jakobshorn', url: 'https://www.davosklostersmountains.ch/de/mountains/winter/live-info/aktuelle-betriebsinfos?active=maps', url2: 'https://www.bergfex.ch/davos-jakobshorn/', logo: 'https://www.davosklostersmountains.ch/archiv/stylelab/logos/ci/media-logos/200451/image-thumb__200451__lightbox/Jakobshorn.jpg' },
+      { id: 24, title: 'Klosters Madrisa', url: 'https://www.davosklostersmountains.ch/de/mountains/winter/live-info/aktuelle-betriebsinfos?active=maps', url2: 'https://www.bergfex.ch/klosters-madrisa/', logo: 'https://www.ausflugsziele.ch/az-img/logos/madrisa-logo.png' },
+      { id: 25, title: 'Les Portes du Soleil', url: 'https://winter.intermaps.com/portes_du_soleil', url2: 'https://www.bergfex.at/skiregionen/les-portes-du-soleil/', logo: 'https://getlogovector.com/wp-content/uploads/2020/09/portes-du-soleil-logo-vector.png' },
+      { id: 26, title: 'Gstaad', url: 'https://winter.intermaps.com/gstaad', url2: 'https://www.bergfex.ch/gstaad/', logo: 'https://www.snowsat.com/_Resources/Persistent/a/d/d/6/add66b84593355166515c12773424f2d4776d7a8/Logo-Gstaas-2019-269457-2375x1337.jpeg' },
+      { id: 27, title: 'Scuol Motta Naluns', url: 'https://www.infosnow.ch/~apgmontagne/?id=178&tab=map-wi', url2: 'https://www.bergfex.ch/scuol/', logo: 'https://a.storyblok.com/f/307975/1920x1080/5785acf2f6/scuol-bergbahnen_skitickets_1920x1080px_1125.jpg' }
+    ];
+
+    let currentEditId = null;
+    // Ohne Button bleibt Edit-Mode standardmässig deaktiviert:
+    let isEditModeActive = false;
+
+    function renderLinks() {
+      const grid = document.getElementById('linkGrid');
+      grid.innerHTML = '';
+
+      const sortedLinks = [...links].sort((a, b) => a.title.localeCompare(b.title, 'de'));
+
+      sortedLinks.forEach(link => {
+        const card = document.createElement('div');
+        card.className = 'link-card';
+
+        // Nur im Bearbeitungsmodus wäre die Card klickbar (zum Editieren).
+        card.style.cursor = isEditModeActive ? 'pointer' : 'default';
+
+        if (isEditModeActive) {
+          card.onclick = function (e) {
+            e.preventDefault();
+            editLink(link.id);
+          };
+        } else {
+          card.onclick = null;
+        }
+
+        card.innerHTML = `
+          <div class="logo-container">
+            <img src="${link.logo}" alt="${link.title}">
+          </div>
+          <div class="link-title">${link.title}</div>
+          <div class="link-secondary">
+            <a class="primary-link" href="${link.url}" target="_blank" rel="noopener noreferrer">Skimap</a>
+            <a class="secondary-link" href="${link.url2 || link.url}" target="_blank" rel="noopener noreferrer">bergfex</a>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // Funktion bleibt drin, ist aber ohne UI-Button nicht erreichbar.
+    function toggleEditMode() {
+      isEditModeActive = !isEditModeActive;
+
+      if (!isEditModeActive) {
+        cancelEdit();
+      }
+
+      renderLinks();
+    }
+
+    function editLink(id) {
+      const link = links.find(l => l.id === id);
+      if (!link) return;
+
+      currentEditId = id;
+      document.getElementById('editTitle').value = link.title;
+      document.getElementById('editUrl').value = link.url;
+      document.getElementById('editUrl2').value = link.url2 || '';
+      document.getElementById('editLogo').value = link.logo;
+
+      document.getElementById('editMode').classList.remove('hidden');
+      document.getElementById('editMode').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function saveLink() {
+      if (currentEditId === null) return;
+
+      const link = links.find(l => l.id === currentEditId);
+      if (!link) return;
+
+      link.title = document.getElementById('editTitle').value.trim();
+      link.url = document.getElementById('editUrl').value.trim();
+      link.url2 = document.getElementById('editUrl2').value.trim();
+      link.logo = document.getElementById('editLogo').value.trim();
+
+      cancelEdit();
+      renderLinks();
+    }
+
+    function cancelEdit() {
+      currentEditId = null;
+      document.getElementById('editMode').classList.add('hidden');
+      document.getElementById('editTitle').value = '';
+      document.getElementById('editUrl').value = '';
+      document.getElementById('editUrl2').value = '';
+      document.getElementById('editLogo').value = '';
+    }
+
+    renderLinks();
+  </script>
+</body>
+</html>
